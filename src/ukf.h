@@ -31,6 +31,9 @@ public:
   ///* predicted sigma points matrix
   MatrixXd Xsig_pred_;
 
+  ///* Aug x_pred
+  MatrixXd Xsig_aug;
+
   ///* time when the state is true, in us
   long long time_us_;
 
@@ -102,6 +105,11 @@ public:
    * @param meas_package The measurement at k+1
    */
   void UpdateRadar(MeasurementPackage meas_package);
+
+  /**
+   * Augment sigma points
+   */
+  void AugmentedSigmaPoints();
 };
 
 #endif /* UKF_H */
