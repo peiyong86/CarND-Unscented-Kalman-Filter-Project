@@ -227,48 +227,48 @@ void UKF::UpdateLidar(MeasurementPackage meas_package) {
 
   You'll also need to calculate the lidar NIS.
   */
-    VectorXd z = meas_package.raw_measurements_;
-    int n_z = 2;
+  VectorXd z = meas_package.raw_measurements_;
+  int n_z = 2;
 
-    MatrixXd Zsig = MatrixXd(n_z, 2 * n_aug_ + 1);
-    for (int i = 0; i < 2 * n_aug_ + 1; i++) {  //2n+1 simga points
-        Zsig(0, i) = Xsig_pred_(0, i);
-        Zsig(1, i) = Xsig_pred_(1, i);
-    }
+  MatrixXd Zsig = MatrixXd(n_z, 2 * n_aug_ + 1);
+  for (int i = 0; i < 2 * n_aug_ + 1; i++) {  //2n+1 simga points
+    Zsig(0, i) = Xsig_pred_(0, i);
+    Zsig(1, i) = Xsig_pred_(1, i);
+  }
 
-    VectorXd z_pred = VectorXd(n_z);
-    z_pred.fill(0.0);
-    for (int i = 0; i < 2 * n_aug_ + 1; i++) {
-        z_pred = z_pred + weights_(i) * Zsig.col(i);
-    }
+  VectorXd z_pred = VectorXd(n_z);
+  z_pred.fill(0);
+  for (int i = 0; i < 2 * n_aug_ + 1; i++) {
+    z_pred = z_pred + weights_(i) * Zsig.col(i);
+  }
 
-    MatrixXd S = MatrixXd(n_z, n_z);
-    S.fill(0.0);
-    for (int i = 0; i < 2 * n_aug_ + 1; i++) {  //2n+1 simga points
-        VectorXd z_diff = Zsig.col(i) - z_pred;
-        S = S + weights_(i) * z_diff * z_diff.transpose();
-    }
+  MatrixXd S = MatrixXd(n_z, n_z);
+  S.fill(0);
+  for (int i = 0; i < 2 * n_aug_ + 1; i++) {  //2n+1 simga points
+    VectorXd z_diff = Zsig.col(i) - z_pred;
+    S = S + weights_(i) * z_diff * z_diff.transpose();
+  }
 
-    //add measurement noise covariance matrix
-    MatrixXd R = MatrixXd(n_z, n_z);
-    R << std_laspx_*std_laspx_, 0,
-            0, std_laspy_*std_laspy_;
-    S = S + R;
+  //add measurement noise covariance matrix
+  MatrixXd R = MatrixXd(n_z, n_z);
+  R << std_laspx_*std_laspx_, 0,
+    0, std_laspy_*std_laspy_;
+  S = S + R;
 
-    MatrixXd Tc = MatrixXd(n_x_, n_z);
-    Tc.fill(0.0);
-    for (int i = 0; i < 2 * n_aug_ + 1; i++) {  //2n+1 simga points
-        VectorXd z_diff = Zsig.col(i) - z_pred;
-        VectorXd x_diff = Xsig_pred_.col(i) - x_;
-        Tc = Tc + weights_(i) * x_diff * z_diff.transpose();
-    }
+  MatrixXd Tc = MatrixXd(n_x_, n_z);
+  Tc.fill(0);
+  for (int i = 0; i < 2 * n_aug_ + 1; i++) {
+    VectorXd z_diff = Zsig.col(i) - z_pred;
+    VectorXd x_diff = Xsig_pred_.col(i) - x_;
+    Tc = Tc + weights_(i) * x_diff * z_diff.transpose();
+  }
 
-    MatrixXd K = Tc * S.inverse();
-    VectorXd z_diff = z - z_pred;
+  MatrixXd K = Tc * S.inverse();
+  VectorXd z_diff = z - z_pred;
 
-    //update state mean and covariance matrix
-    x_ = x_ + K * z_diff;
-    P_ = P_ - K*S*K.transpose();
+  //update state mean and covariance matrix
+  x_ = x_ + K * z_diff;
+  P_ = P_ - K*S*K.transpose();
 }
 
 /**
@@ -308,16 +308,16 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
 
   //mean predicted measurement
   VectorXd z_pred = VectorXd(n_z_);
-  z_pred.fill(0.0);
+  z_pred.fill(0);
   for (int i=0; i < 2*n_aug_+1; i++) {
       z_pred = z_pred + weights_(i) * Zsig.col(i);
   }
 
   //measurement covariance matrix S
   MatrixXd S = MatrixXd(n_z_, n_z_);
-  S.fill(0.0);
+  S.fill(0);
 
-  for (int i = 0; i < 2 * n_aug_ + 1; i++) {  //2n+1 simga points
+  for (int i = 0; i < 2 * n_aug_ + 1; i++) {
       //residual
       VectorXd z_diff = Zsig.col(i) - z_pred;
 
